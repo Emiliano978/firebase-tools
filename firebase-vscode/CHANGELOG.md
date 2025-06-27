@@ -1,5 +1,18 @@
 ## NEXT
 
+## 1.5.0
+
+- Update internal `firebase-tools` dependency to 14.9.0
+- Update internal `graphql-language-server` dependency
+- Update internal `graphql-language-service-server` dependency
+- [Changed] Graphql Syntax Highlighter is now an extension dependency
+- [Fixed] Language server now recognizes fragments in other files
+
+## 1.4.1
+
+- Update internal `firebase-tools` dependency to 14.6.0
+- [Changed] Updated Gemini Tool name to @FirebaseDataConnect
+
 ## 1.4.0
 
 - Update internal `firebase-tools` dependency to 14.4.0
