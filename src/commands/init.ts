@@ -15,6 +15,7 @@ import { Options } from "../options";
 import { isEnabled } from "../experiments";
 import { readTemplateSync } from "../templates";
 import { FirebaseError } from "../error";
+import { trackGA4 } from "../track";
 
 const homeDir = os.homedir();
 
@@ -108,6 +109,14 @@ if (isEnabled("genkit")) {
   ];
 }
 
+if (isEnabled("apptesting")) {
+  choices.push({
+    value: "apptesting",
+    name: "App Testing: create a smoke test",
+    checked: false,
+  });
+}
+
 const featureNames = choices.map((choice) => choice.value);
 
 const HELP = `Interactively configure the current directory as a Firebase project or initialize new features in an already configured Firebase project directory.
@@ -140,6 +149,8 @@ export async function initAction(feature: string, options: Options): Promise<voi
         ".",
     );
   }
+
+  const start = process.uptime();
 
   const cwd = options.cwd || process.cwd();
 
@@ -202,6 +213,17 @@ export async function initAction(feature: string, options: Options): Promise<voi
         "Which Firebase features do you want to set up for this directory? " +
         "Press Space to select features, then Enter to confirm your choices.",
       choices: choices.filter((c) => !c.hidden),
+      validate: (choices) => {
+        if (choices.length === 0) {
+          return (
+            "Must select at least one feature. Use " +
+            clc.bold(clc.underline("SPACEBAR")) +
+            " to select features, or specify a feature by running " +
+            clc.bold("firebase init [feature_name]")
+          );
+        }
+        return true;
+      },
     });
   }
   if (!setup.features || setup.features?.length === 0) {
@@ -235,6 +257,10 @@ export async function initAction(feature: string, options: Options): Promise<voi
   if (!fsutils.fileExistsSync(config.path(".gitignore"))) {
     config.writeProjectFile(".gitignore", GITIGNORE_TEMPLATE);
   }
+  const duration = Math.floor((process.uptime() - start) * 1000);
+
+  await trackGA4("product_init", { products_initialized: setup.features?.join(",") }, duration);
+
   logger.info();
   utils.logSuccess("Firebase initialization complete!");
 }

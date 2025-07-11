@@ -560,6 +560,8 @@ export async function startAll(
     await startEmulator(extensionEmulator);
   }
 
+  const account = getProjectDefaultAccount(options.projectRoot);
+
   if (emulatableBackends.length) {
     if (!listenForEmulator.functions || !listenForEmulator.eventarc || !listenForEmulator.tasks) {
       // We did not know that we need Functions and Eventarc earlier but now we do.
@@ -600,8 +602,6 @@ export async function startAll(
         )}`,
       );
     }
-
-    const account = getProjectDefaultAccount(options.projectRoot);
 
     // TODO(b/213241033): Figure out how to watch for changes to extensions .env files & reload triggers when they change.
     const functionsEmulator = new FunctionsEmulator({
@@ -887,6 +887,7 @@ export async function startAll(
       enable_output_generated_sdk: true, // TODO: source from arguments
       enable_output_schema_extensions: true,
       debug: options.debug,
+      account,
     };
 
     if (exportMetadata.dataconnect) {
@@ -1133,7 +1134,7 @@ export async function exportEmulatorData(exportPath: string, options: any, initi
   const exportAbsPath = path.resolve(exportPath);
   if (!fs.existsSync(exportAbsPath)) {
     utils.logBullet(`Creating export directory ${exportAbsPath}`);
-    fs.mkdirSync(exportAbsPath);
+    fs.mkdirSync(exportAbsPath, { recursive: true });
   }
 
   // Check if there is already an export there and prompt the user about deleting it
